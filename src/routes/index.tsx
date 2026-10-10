@@ -1,24 +1,37 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useState } from 'react';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { ArrowUpRight, ArrowRight, UsersRound, Megaphone, ShieldCheck, Languages, Sparkles, CalendarDays, Plus, Globe2, Activity } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { PageHeading } from '@/components/omnipulse-shell';
+import { CreatorCard } from '@/components/creator-card';
+import { creators, languageReach } from '@/lib/omnipulse';
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
-export const Route = createFileRoute("/")({
-  component: Index,
-});
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
+export const Route = createFileRoute('/')({ head: () => ({ meta: [{title:'Dashboard Overview | Braco OmniPulse'},{name:'description',content:'Regional campaign analytics, multilingual scripts, and creator insights for Braco OmniPulse.'},{property:'og:title',content:'Braco OmniPulse — Regional Campaign Command Center'},{property:'og:description',content:'Connect regional voices with measurable impact.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary_large_image'}] }), component: Index });
+const chart = [
+  {day:'Sep 1',reach:24,engagement:9},{day:'Sep 5',reach:37,engagement:14},{day:'Sep 10',reach:31,engagement:11},{day:'Sep 15',reach:53,engagement:23},{day:'Sep 20',reach:45,engagement:18},{day:'Sep 25',reach:65,engagement:29},{day:'Sep 30',reach:80,engagement:40},
+];
 function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+  const [period, setPeriod] = useState('Last 30 days');
+  const data = period === 'Last 7 days' ? chart.slice(-4) : chart;
+  return <>
+    <PageHeading title="Your regional command center" subtitle="Every language. Every creator. One pulse." action={<><span className="demo-pill">Demo workspace</span><Button variant="outline" onClick={() => setPeriod(period === 'Last 30 days' ? 'Last 7 days' : 'Last 30 days')}><CalendarDays/>{period}</Button><Button asChild><Link to="/scripts"><Plus/>New campaign</Link></Button></>}/>
+    <div className="overview-banner"><div><h2><Sparkles size={18}/> Local voices. Limitless possibilities.</h2><p>Turn your next big idea into a campaign that speaks their language.</p></div><div className="banner-decoration"><Activity/></div><Button asChild><Link to="/scripts">Create your first script <ArrowRight/></Link></Button></div>
+    <div className="stat-grid">{[
+      {label:'Total Regional Reach',value:'2.84M',growth:'+18.6%',note:'vs. previous 30 days',icon:UsersRound},
+      {label:'Active Campaigns',value:'24',growth:'+4',note:'Across 5 regional markets',icon:Megaphone},
+      {label:'ASCI Compliance Rate',value:'98.2%',growth:'+2.4%',note:'Keeping your brand protected',icon:ShieldCheck},
+      {label:'Regional Creators',value:'156',growth:'+12',note:'Authentic voices, verified impact',icon:Globe2},
+    ].map(s => <article className="stat-card" key={s.label}><div className="stat-top"><span>{s.label}</span><span className="stat-icon"><s.icon size={15}/></span></div><div className="stat-value"><strong>{s.value}</strong><span className="stat-growth">↗ {s.growth}</span></div><p>{s.note}</p></article>)}</div>
+    <div className="analytics-grid"><section className="panel"><div className="panel-header"><div><h2>Campaign performance</h2><p>Regional reach and engagement over time</p></div><select aria-label="Chart period" value={period} onChange={e => setPeriod(e.target.value)}><option>Last 30 days</option><option>Last 7 days</option></select></div><div className="chart-legend"><span><i className="legend-dot"/>Regional reach</span><span><i className="legend-dot emerald"/>Engagement</span></div><div className="reach-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={data} margin={{top:12,right:10,left:-12,bottom:0}}><defs><linearGradient id="reach-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--primary)" stopOpacity={0.23}/><stop offset="100%" stopColor="var(--primary)" stopOpacity={0}/></linearGradient><linearGradient id="engagement-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--success)" stopOpacity={0.10}/><stop offset="100%" stopColor="var(--success)" stopOpacity={0}/></linearGradient></defs><CartesianGrid stroke="var(--border)" vertical={false} strokeDasharray="3 5"/><XAxis dataKey="day" axisLine={false} tickLine={false} tickMargin={12}/><YAxis domain={[0,100]} ticks={[0,25,50,75,100]} tickFormatter={v => v === 0 ? '0' : `${v}K`} axisLine={false} tickLine={false}/><Tooltip content={({active,payload,label}) => active && payload?.length ? <div className="panel p-3"><strong>{label}</strong>{payload.map(p => <p key={p.dataKey} className="text-muted-foreground mt-1">{p.name}: {p.value}K</p>)}</div> : null}/><Area type="monotone" dataKey="reach" name="Regional reach" stroke="var(--primary)" strokeWidth={2.5} fill="url(#reach-fill)" isAnimationActive={false}/><Area type="monotone" dataKey="engagement" name="Engagement" stroke="var(--success)" strokeWidth={2} fill="url(#engagement-fill)" isAnimationActive={false}/></AreaChart></ResponsiveContainer></div></section>
+    <section className="panel language-panel"><div className="panel-header"><div><h2>Language reach</h2><p>Your audience, in their own words</p></div><Languages size={16} className="text-muted-foreground"/></div><div className="language-chart"><svg viewBox="0 0 160 160" aria-label="Telugu 40%, Tamil 35%, Hindi 25%"><circle cx="80" cy="80" r="60" fill="none" strokeWidth="15" className="donut-bg"/>{languageReach.map((l,i) => <circle key={l.language} cx="80" cy="80" r="60" fill="none" strokeWidth="15" strokeDasharray={`${l.value*3.77-5} 377`} strokeDashoffset={-([0,40,75][i] ?? 0)*3.77} className={`donut-${l.language.toLowerCase()}`}/>)}</svg><div className="donut-center"><strong>2.84M</strong><small>Total reach</small></div></div><div className="language-list">{languageReach.map((l,i) => <div key={l.language}><i className={`legend-dot ${i === 1 ? 'emerald' : i === 2 ? 'sky' : ''}`}/><span>{l.language}</span><small>{['1.14M','994K','710K'][i]}</small><strong>{l.value}%</strong></div>)}</div></section></div>
+    <div className="section-heading"><div><h2>Your AI toolkit</h2><p>From the first idea to the final impact.</p></div><span className="demo-pill"><Sparkles size={10}/> AI-powered</span></div>
+    <div className="tools-grid">{[
+      {title:'Multilingual Script Engine',text:'Create scroll-stopping hooks and scripts that sound local, not translated.',icon:Languages,to:'/scripts',action:'Generate a script',badge:'5 languages'},
+      {title:'ASCI Compliance Screener',text:'Create with confidence. Screen disclosures, claims, and cultural sensitivity.',icon:ShieldCheck,to:'/compliance',action:'Run a compliance check',badge:'Brand safety'},
+      {title:'Regional Creator Discovery',text:'Find the right voices for your brand. Local relevance meets real influence.',icon:UsersRound,to:'/creators',action:'Discover creators',badge:'156 creators'},
+    ].map(t => <article className="tool-card" key={t.title}><span className="tool-icon"><t.icon size={19}/></span><span className="tool-badge">{t.badge}</span><h3>{t.title}</h3><p>{t.text}</p><Link to={t.to}>{t.action}<ArrowRight size={13}/></Link></article>)}</div>
+    <div className="section-heading"><div><h2>Creators making waves</h2><p>High trust. Strong engagement. Regional roots.</p></div><Link to="/creators">View all creators <ArrowUpRight size={14}/></Link></div><div className="creator-grid">{creators.slice(0,3).map(c => <CreatorCard creator={c} compact key={c.name} onSelect={() => {window.location.href='/creators';}}/>)}</div>
+    <section className="activity-section"><div className="section-heading"><div><h2>Active campaigns</h2><p>A pulse check on what’s happening now.</p></div><span className="demo-pill">Sample campaign data</span></div><div className="panel table-scroll"><table className="campaign-table"><thead><tr><th>CAMPAIGN</th><th>MARKET</th><th>CREATORS</th><th>REACH</th><th>STATUS</th></tr></thead><tbody>{[['Everyday glow','Beauty · Product launch','Telugu','8','482K'],['Tech that speaks to you','Tech · Awareness','Tamil','6','316K'],['A taste of home','Food · Brand storytelling','Hindi','12','624K']].map(c => <tr key={c[0]}><td><strong>{c[0]}</strong><small>{c[1]}</small></td><td><span className={`language-tag lang-${c[2]?.toLowerCase()}`}>{c[2]}</span></td><td>{c[3]} creators</td><td>{c[4]}</td><td><span className="campaign-status"><span className="status-dot"/>Active</span></td></tr>)}</tbody></table></div></section>
+  </>;
 }
