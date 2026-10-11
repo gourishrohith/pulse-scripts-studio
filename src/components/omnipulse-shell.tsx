@@ -27,12 +27,17 @@ export function OmniShell({ children }: { children: React.ReactNode }) {
         }
       });
     }, { threshold: 0.06 });
-    const elements = content.querySelectorAll('.page-heading, .overview-banner, .stat-card, .analytics-grid > .panel, .section-heading, .tool-card, .creator-card, .activity-section, .form-grid > .panel, .filter-bar, .creator-count, .settings-layout');
-    elements.forEach(element => {
-      element.setAttribute('data-reveal', 'pending');
-      observer.observe(element);
-    });
-    return () => observer.disconnect();
+    const registerElements = () => {
+      content.querySelectorAll('.page-heading, .overview-banner, .stat-card, .analytics-grid > .panel, .section-heading, .tool-card, .creator-card, .activity-section, .form-grid > .panel, .filter-bar, .creator-count, .settings-layout').forEach(element => {
+        if (element.hasAttribute('data-reveal')) return;
+        element.setAttribute('data-reveal', 'pending');
+        observer.observe(element);
+      });
+    };
+    registerElements();
+    const updates = new MutationObserver(registerElements);
+    updates.observe(content, { childList: true, subtree: true });
+    return () => { observer.disconnect(); updates.disconnect(); };
   }, [pathname]);
   const title = nav.find(n => n.to === pathname)?.label ?? 'Overview';
   return <div className="app-shell">

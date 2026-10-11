@@ -16,7 +16,6 @@ function Index() {
   const data = period === 'Last 7 days' ? chart.slice(-4) : chart;
   return <>
     <PageHeading title="Your regional command center" subtitle="Every language. Every creator. One pulse." action={<><span className="demo-pill">Demo workspace</span><Button variant="outline" onClick={() => setPeriod(period === 'Last 30 days' ? 'Last 7 days' : 'Last 30 days')}><CalendarDays/>{period}</Button><Button asChild><Link to="/scripts"><Plus/>New campaign</Link></Button></>}/>
-    <div className="overview-banner"><div><h2><Sparkles size={18}/> Local voices. Limitless possibilities.</h2><p>Turn your next big idea into a campaign that speaks their language.</p></div><div className="banner-decoration"><Activity/></div><Button asChild><Link to="/scripts">Create your first script <ArrowRight/></Link></Button></div>
     <div className="stat-grid">{[
       {label:'Total Regional Reach',value:'2.84M',growth:'+18.6%',note:'vs. previous 30 days',icon:UsersRound},
       {label:'Active Campaigns',value:'24',growth:'+4',note:'Across 5 regional markets',icon:Megaphone},
